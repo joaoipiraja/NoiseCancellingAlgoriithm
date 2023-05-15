@@ -8,14 +8,24 @@ O Normalize Least Mean Square Filter (NLMS) é um algoritmo de filtro adaptativo
 # Como usar
 O filtro é implementado na função nlms_filter_with_lowpass(x, d, L, mu, beta=1, pre_emphasis=0.75, cutoff_freq=0.35), onde os argumentos são:
 
-- x: o sinal de entrada como um array 1D;
-- d: o sinal de referência como um array 1D;
-- L: o comprimento do filtro;
-- mu: o parâmetro de tamanho do passo;
-- beta: o parâmetro de regularização (opcional, valor padrão é 1);
-- pre_emphasis: o fator de pré-ênfase (opcional, valor padrão é 0.75);
-- cutoff_freq: a frequência de corte do filtro passa-baixa (opcional, valor padrão é 0.35).
-- A função retorna o sinal filtrado y.
+- x: sinal de entrada (array unidimensional).
+- d: sinal de referência (array unidimensional).
+- L: comprimento do filtro.
+- mu: parâmetro de tamanho de passo.
+- beta (opcional): parâmetro de regularização (padrão = 1).
+- pre_emphasis (opcional): fator de pré-ênfase (padrão = 0,75).
+- cutoff_freq (opcional): frequência de corte para o filtro passa-baixa (padrão = 0,35).
+
+Aqui está uma breve descrição de cada variável:
+
+- x_filtered: sinal de entrada filtrado com um filtro passa-baixa de Butterworth de ordem 4 com frequência de corte cutoff_freq.
+- x_pre_emph: sinal de entrada pré-ênfase com fator pre_emphasis.
+- w: vetor de pesos do filtro (comprimento L).
+- energy: estimativa de energia do sinal.
+- buffer: buffer de atraso que armazena as amostras de entrada anteriores.
+- y: sinal de saída do filtro.
+- e: erro de estimação do filtro.
+
 
 # Exemplo de uso
 Um exemplo de uso pode ser encontrado no código Python acima, que aplica o filtro NLMS com filtro passa-baixa em um arquivo de áudio com ruído para reduzir o ruído. O sinal de referência é outro arquivo de áudio que contém apenas o ruído. O sinal de entrada é normalizado antes de ser passado para a função nlms_filter_with_lowpass. O sinal filtrado é normalizado novamente e salvo em um novo arquivo de áudio com o nome especificado. O código também plota os sinais de entrada, referência e filtrado usando a biblioteca Matplotlib.
