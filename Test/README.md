@@ -38,6 +38,21 @@ x_filtered = signal.filtfilt(b, a, data)
 
 Conferir arquivo `signalFiltFilt.csv`
 
+# Comparar Arrays
+
+```swift
+
+int compareArrays(int arr1[], int arr2[], int size) {
+    for (int i = 0; i < size; i++) {
+        if (arr1[i] != arr2[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+```
+
 # Ler arquivo .csv em C
 
 ```swift
