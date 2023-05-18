@@ -45,44 +45,105 @@ Conferir arquivo `signalFiltFilt.csv`
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LINE_LENGTH 100
+#define INITIAL_MAX_RECORDS 100
 #define MAX_FIELD_LENGTH 20
-#define MAX_RECORDS 100
 
-int main() {
+typedef struct {
+    double *values;
+    int size;
+} CSVData;
+
+CSVData processCSVFile(const char *filename) {
+    CSVData csvData;
     FILE *file;
-    char line[MAX_LINE_LENGTH];
+    char *line = NULL;
     char *field;
-    double values[MAX_RECORDS];
+    double *values = NULL;
     int recordCount = 0;
+    int maxRecords = 0;
+    size_t lineLength = 0;
+    size_t maxLineLength = 0;
 
     // Abre o arquivo CSV para leitura
-    file = fopen("arquivo.csv", "r");
+    file = fopen(filename, "r");
     if (file == NULL) {
         printf("Erro ao abrir o arquivo.");
-        return 1;
+        csvData.values = NULL;
+        csvData.size = 0;
+        return csvData;
     }
 
     // Lê linha por linha do arquivo
-    while (fgets(line, MAX_LINE_LENGTH, file)) {
+    while (getline(&line, &lineLength, file) != -1) {
         field = strtok(line, ",");
-        if (field != NULL) {
+        while (field != NULL) {
             double value = atof(field);
+
+            // Realoca o array de valores se necessário
+            if (recordCount >= maxRecords) {
+                maxRecords = (maxRecords == 0) ? INITIAL_MAX_RECORDS : maxRecords * 2;
+                values = realloc(values, maxRecords * sizeof(double));
+                if (values == NULL) {
+                    printf("Erro ao alocar memória.");
+                    fclose(file);
+                    free(line);
+                    csvData.values = NULL;
+                    csvData.size = 0;
+                    return csvData;
+                }
+            }
+
             values[recordCount] = value;
             recordCount++;
+
+            field = strtok(NULL, ",");
+        }
+
+        // Atualiza o tamanho máximo da linha, se necessário
+        size_t currentLineLength = strlen(line);
+        if (currentLineLength > maxLineLength) {
+            maxLineLength = currentLineLength;
+            line = realloc(line, (maxLineLength + 1) * sizeof(char));
+            if (line == NULL) {
+                printf("Erro ao alocar memória.");
+                fclose(file);
+                free(values);
+                csvData.values = NULL;
+                csvData.size = 0;
+                return csvData;
+            }
         }
     }
 
-    // Imprime os valores do array
-    for (int i = 0; i < recordCount; i++) {
-        printf("%lf\n", values[i]);
-    }
+    csvData.values = values;
+    csvData.size = recordCount;
+
+    // Libera a memória alocada para a linha
+    free(line);
 
     // Fecha o arquivo
     fclose(file);
 
+    return csvData;
+}
+
+int main() {
+    const char *filename = "audio_com_ruido.csv";
+    CSVData csvData = processCSVFile(filename);
+
+    if (csvData.values != NULL) {
+        // Imprime os valores do array
+        for (int i = 0; i < csvData.size; i++) {
+            printf("%lf\n", csvData.values[i]);
+        }
+
+        // Libera a memória alocada para os valores
+        free(csvData.values);
+    }
+
     return 0;
 }
+
 
 ```
 
