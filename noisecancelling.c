@@ -49,6 +49,7 @@ void butter_a_coeffs(int order, double *a_coeffs) {
 
 /* Função de filtro Butterworth */
 void signal_butter(int order, double cutoff_freq, double *input, double *output, int length) {
+    
     double b_coeffs[order+1];
     double a_coeffs[order+1];
     butter_b_coeffs(order, cutoff_freq, b_coeffs);
@@ -82,9 +83,9 @@ void signal_filtfilt(float *x, float *y, int N, float *b, int nb, float *a, int 
     // x: sinal de entrada
     // y: sinal de saída
     // b: coeficientes do numerador do filtro
-    // nb: ordem do numerador do filtro
+    // nb: tamanho de b
     // a: coeficientes do denominador do filtro
-    // na: ordem do denominador do filtro
+    // na: tamanho de a
 
     int i, j;
     float sum;
