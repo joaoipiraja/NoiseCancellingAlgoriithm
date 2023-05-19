@@ -4,20 +4,19 @@
 
 #define M_PI 3.14159265358979323846
 
+
 /* Função que retorna o coeficiente b */
 void butter_b_coeffs(int order, double cutoff_freq, double *b_coeffs) {
-    int i, j;
     double fc = tan(cutoff_freq * M_PI) ;
-    double sqrt2 = sqrt(2.0);
     double denom;
 
-    for(i = 0; i <= order; i++) {
+    for(int i = 0; i <= order; i++) {
         b_coeffs[i] = 0.0;
-        for(j = 0; j <= order; j++) {
+        for(int j = 0; j <= order; j++) {
             if (i == j) {
                 denom = 1.0;
             } else if (i == j + 1 || i == j - 1) {
-                denom = sqrt2 * fc;
+                denom = order * fc;
             } else {
                 denom = 0.0;
             }
@@ -28,17 +27,15 @@ void butter_b_coeffs(int order, double cutoff_freq, double *b_coeffs) {
 
 /* Função que retorna o coeficiente a */
 void butter_a_coeffs(int order, double *a_coeffs) {
-    int i, j;
-    double sqrt2 = sqrt(2.0);
     double denom;
 
-    for(i = 0; i <= order; i++) {
+    for(int i = 0; i <= order; i++) {
         a_coeffs[i] = 0.0;
-        for(j = 0; j <= order; j++) {
+        for(int j = 0; j <= order; j++) {
             if (i == j) {
                 denom = 1.0;
             } else if (i == j + 1 || i == j - 1) {
-                denom = sqrt2;
+                denom = order;
             } else {
                 denom = 0.0;
             }
@@ -49,25 +46,24 @@ void butter_a_coeffs(int order, double *a_coeffs) {
 
 /* Função de filtro Butterworth */
 void signal_butter(int order, double cutoff_freq, double *input, double *output, int length) {
-    
     double b_coeffs[order+1];
     double a_coeffs[order+1];
+
     butter_b_coeffs(order, cutoff_freq, b_coeffs);
     butter_a_coeffs(order, a_coeffs);
 
-    int i, j;
     double sum;
 
-    for(i = 0; i < length; i++) {
+    for(int i = 0; i < length; i++) { //int i
         sum = 0.0;
-        for(j = 0; j <= order; j++) {
+        for(int j = 0; j <= order; j++) {
             if(i - j < 0) {
                 sum += 0.0;
             } else {
                 sum += b_coeffs[j] * input[i-j];
             }
         }
-        for(j = 1; j <= order; j++) {
+        for(int j = 1; j <= order; j++) {
             if(i - j < 0) {
                 sum += 0.0;
             } else {
@@ -83,9 +79,9 @@ void signal_filtfilt(float *x, float *y, int N, float *b, int nb, float *a, int 
     // x: sinal de entrada
     // y: sinal de saída
     // b: coeficientes do numerador do filtro
-    // nb: tamanho de b
+    // nb: ordem do numerador do filtro
     // a: coeficientes do denominador do filtro
-    // na: tamanho de a
+    // na: ordem do denominador do filtro
 
     int i, j;
     float sum;
@@ -121,8 +117,8 @@ void nlms_filter_with_lowpass(float *x, float *d, int L, float mu, float beta, f
     int i;
     float a[5], b[5];
     int order = 4;
-    signal_butter(order, cutoff_freq, b, a);
-    signal_filtfilt(b, a, x, len_x, x_filtered);
+    signal_butter(order, cutoff_freq, b, a, len_x);
+    signal_filtfilt(b, a, x, len_x, x_filtered, a, b);
 
     // Apply pre-emphasis to the filtered input signal
     float *x_pre_emph = (float*) malloc(len_x * sizeof(float));
