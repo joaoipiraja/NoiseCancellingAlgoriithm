@@ -191,14 +191,6 @@ void nlmsFilterWithLowpass(const double *x, const double *d, int length,   doubl
     signal_filtfilt(b,a, x, x_filtered, L, order);
 
 
-    // Apply lowpass filter to the input signal
-    for (int i = 0; i < length; i++) {
-        if (i == 0) {
-            x_filtered[i] = x[i];
-        } else {
-            x_filtered[i] = (1 - cutoff) * x_filtered[i - 1] + cutoff * x[i];
-        }
-    }
 
     // Apply pre-emphasis to the filtered input signal
     x_pre_emph[0] = x_filtered[0];
