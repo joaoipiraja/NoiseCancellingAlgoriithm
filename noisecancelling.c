@@ -18,7 +18,7 @@ double dotProduct(double *a, double *b, int length) {
 }
 
 
-void nlmsFilterWithLowpass(float x[], float d[], float y[]) {
+void nlmsFilter(float x[], float d[], float y[]) {
 
     double mu = 0.0001;
     double energy = 0.1;
@@ -134,7 +134,7 @@ int main() {
 
 
   initArray(y);
-  nlmsFilterWithLowpass(x,ruido, y);
+  nlmsFilter(x,ruido, y);
   printArray(y);
  
   return 0;
