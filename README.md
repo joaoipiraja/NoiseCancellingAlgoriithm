@@ -7,7 +7,7 @@ The code consists of the following files:
 - `nlms_filter.c`: This file contains the main implementation of the NLMS filter with low-pass. It defines the necessary functions and performs the filtering operation.
 
 ### Usage
-To use the NLMS filter with low-pass, follow these steps:
+To use , follow these steps:
 
 - Clone the repository or download the nlms_filter.c file.
 - Compile the code using a C compiler. For example, you can use the following command with GCC:
