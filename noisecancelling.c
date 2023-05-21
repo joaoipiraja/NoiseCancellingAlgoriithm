@@ -4,98 +4,12 @@
 #include <math.h>
 
 
-#define M_PI 3.14159265358979323846
-
-#define INITIAL_MAX_RECORDS 100
-#define MAX_FIELD_LENGTH 20
-
-typedef struct {
-    double *values;
-    int size;
-} CSVData;
+#define LENGHT 100
+#define L 256
 
 
-typedef struct {
-    double b0, b1, b2;
-    double a1, a2;
-} FilterCoefficients;
 
-
-CSVData processCSVFile(const char *filename) {
-    CSVData csvData;
-    FILE *file;
-    char *line = NULL;
-    char *field;
-    double *values = NULL;
-    int recordCount = 0;
-    int maxRecords = 0;
-    size_t lineLength = 0;
-    size_t maxLineLength = 0;
-
-    // Abre o arquivo CSV para leitura
-    file = fopen(filename, "r");
-    if (file == NULL) {
-        printf("Erro ao abrir o arquivo.");
-        csvData.values = NULL;
-        csvData.size = 0;
-        return csvData;
-    }
-
-    // Lê linha por linha do arquivo
-    while (getline(&line, &lineLength, file) != -1) {
-        field = strtok(line, ",");
-        while (field != NULL) {
-            double value = atof(field);
-
-            // Realoca o array de valores se necessário
-            if (recordCount >= maxRecords) {
-                maxRecords = (maxRecords == 0) ? INITIAL_MAX_RECORDS : maxRecords * 2;
-                values = realloc(values, maxRecords * sizeof(double));
-                if (values == NULL) {
-                    printf("Erro ao alocar memória.");
-                    fclose(file);
-                    free(line);
-                    csvData.values = NULL;
-                    csvData.size = 0;
-                    return csvData;
-                }
-            }
-
-            values[recordCount] = value;
-            recordCount++;
-
-            field = strtok(NULL, ",");
-        }
-
-        // Atualiza o tamanho máximo da linha, se necessário
-        size_t currentLineLength = strlen(line);
-        if (currentLineLength > maxLineLength) {
-            maxLineLength = currentLineLength;
-            line = realloc(line, (maxLineLength + 1) * sizeof(char));
-            if (line == NULL) {
-                printf("Erro ao alocar memória.");
-                fclose(file);
-                free(values);
-                csvData.values = NULL;
-                csvData.size = 0;
-                return csvData;
-            }
-        }
-    }
-
-    csvData.values = values;
-    csvData.size = recordCount;
-
-    // Libera a memória alocada para a linha
-    free(line);
-
-    // Fecha o arquivo
-    fclose(file);
-
-    return csvData;
-}
-
-double dotProduct(const double *a, const double *b, int length) {
+double dotProduct(double *a, double *b, int length) {
     double result = 0.0;
     for (int i = 0; i < length; i++) {
         result += a[i] * b[i];
@@ -103,151 +17,125 @@ double dotProduct(const double *a, const double *b, int length) {
     return result;
 }
 
-void forwardFilter(const double *input, const double *b, const double *a,double *output, int size, int ncoef) {
-    for (int i = 0; i < size; i++) {
-        double sum = 0.0;
-        for (int j = 0; j < ncoef; j++) {
-            if (i - j >= 0) {
-                sum += b[j] * input[i - j];
-            }
-        }
-        for (int j = 1; j < ncoef; j++) {
-            if (i - j >= 0) {
-                sum -= a[j] * output[i - j];
-            }
-        }
-        output[i] = sum / a[0];
-    }
-}
 
-void backwardFilter(const double *input, const double *b, const double *a, double *output, int size, int ncoef) {
-    for (int i = size - 1; i >= 0; i--) {
-        double sum = 0.0;
-        for (int j = 0; j < ncoef; j++) {
-            if (i + j < size) {
-                sum += b[j] * input[i + j];
-            }
-        }
-        for (int j = 1; j < ncoef; j++) {
-            if (i + j < size) {
-                sum -= a[j] * output[i + j];
-            }
-        }
-        output[i] = sum / a[0];
-    }
-}
+void nlmsFilterWithLowpass(float x[], float d[], float y[]) {
 
-void signal_filtfilt(const double *b, const double *a, const double *x, double *y, int size, int ncoef) {
-    double *temp = (double *)malloc(size * sizeof(double));
-    double *reverse = (double *)malloc(size * sizeof(double));
-
-    forwardFilter(x, b, a, temp, size, ncoef);
-    backwardFilter(temp, b, a, reverse, size, ncoef);
-    forwardFilter(reverse, b, a, y, size, ncoef);
-
-    free(temp);
-    free(reverse);
-}
-
-
-void butterworthLowpass(int order, double cutoff, double *b, double *a) {
-    double omegaC = tan(M_PI * cutoff);
-    double omegaCSquared = omegaC * omegaC;
-    double theta = M_PI / (2.0 * order);
-
-    // Calculate the denominator coefficients (a)
-    for (int i = 0; i < order; i++) {
-        double alpha = sin((2 * i + 1) * theta);
-        double beta = 1.0 + (omegaC * alpha);
-        a[i] = omegaCSquared / (beta + omegaCSquared);
-    }
-
-    // Calculate the numerator coefficients (b)
-    for (int i = 0; i < order; i++) {
-        b[i] = 1.0;
-    }
-}
-
-void nlmsFilterWithLowpass(const double *x, const double *d, int length,   double *y) {
-
-    int L = 256;
     double mu = 0.0001;
-    double beta = 1.0;
-  
-    int order = 4;
-    double cutoff = 0.75;
-    double pre_emphasis = 0.35;
     double energy = 0.1;
+    double error = 0.0;
 
+
+    double w[L];
+    double buffer[L];
   
-    double *x_filtered = (double *)malloc(length * sizeof(double));
-    double *x_pre_emph = (double *)malloc(length * sizeof(double));
-    double *w = (double *)malloc(L * sizeof(double));
-    double *buffer = (double *)malloc(L * sizeof(double));
-    double *b = (double *)malloc(order * sizeof(double));
-    double *a = (double *)malloc(order * sizeof(double));
-
-    butterworthLowpass(order,cutoff,b, a);
-    signal_filtfilt(b,a, x, x_filtered, L, order);
-
-
-
-    // Apply pre-emphasis to the filtered input signal
-    x_pre_emph[0] = x_filtered[0];
-    for (int i = 1; i < length; i++) {
-        x_pre_emph[i] = x_filtered[i] - pre_emphasis * x_filtered[i - 1];
-    }
-
     // Initialize the filter coefficients
     for (int i = 0; i < L; i++) {
         w[i] = 0.0;
     }
 
-    // Apply the NLMS filter to the input signal
-    for (int n = 0; n < length; n++) {
-        // Update the buffer with the latest input sample
+    for (int i = 0; i < L; i++) {
+        buffer[i] = 0.0;
+    }
+
+   for (int i = 0; i < LENGHT; i++) {
+        y[i] = 0.0;
+    }
+
+
+    for (int n = 0; n < LENGHT; n++) {
         for (int i = L - 1; i > 0; i--) {
             buffer[i] = buffer[i - 1];
         }
-        buffer[0] = x_pre_emph[n];
+        buffer[0] = x[n];
 
-        // Calculate the output signal
-        y[n] = 0.0;
-        for (int i = 0; i < L; i++) {
-            y[n] += w[i] * buffer[i];
-        }
+        y[n] = dotProduct( w, buffer, L);
 
-        // Calculate the error
-        double e;
-        if (n < length) {
-            e = d[n] - y[n];
-        } else {
-            e = 0.0;
-        }
+        error = d[n] - y[n];
 
-        // Update the filter coefficients and energy estimate
-        energy = beta * energy + (1 - beta) * dotProduct(buffer, buffer, L);
-        for (int i = 0; i < L; i++) {
-            w[i] += (mu / energy) * e * buffer[i];
-        }
+        energy = energy + dotProduct(buffer, buffer, L);
+      
+          for (int i = 0; i < L; i++) {
+              w[i] += (mu / energy) * error * buffer[i];
+          }
     }
 }
 
+void printArray(float values[]){
+  printf("\nsaida = [");
+  for(int i = 0; i< LENGHT; i++){
+    if(i < LENGHT - 1){
+          printf("%f,", values[i]);
+    }else{
+          printf("%f", values[i]);
+    }
+  }
+  printf("] \n");
+}
+
+void initArray(float values[]){
+  for(int i = 0; i< LENGHT; i++){
+      values[i] = 0;
+  }
+}
 
 
 
 int main() {
 
-   int order = 4;
-   double cutoff = 0.75;
-  //  const char *filename = "audio_com_ruido.csv";
-    CSVData audioRuido = processCSVFile("audio_ruido.csv");
-    CSVData audioComRuido = processCSVFile("audio_com_ruido.csv");
+  float y[LENGHT];
 
-    double *y = (double*) malloc(audioRuido.size *             sizeof(double));
+  float x[] = { 0.05783501,  0.14401321,  0.3029481 ,  0.12347155,  0.26501613,
+        0.21797423,  0.59412402,  0.59967532,  0.4947141 ,  0.5849392 ,
+        0.75278209,  0.61580319,  0.65267839,  0.92548981,  0.71347061,
+        0.81594012,  0.7271617 ,  0.96596322,  0.94864944,  0.93394517,
+        0.98624816,  0.92318725,  1.02619158,  1.17772075,  0.9035374 ,
+        1.04702673,  0.98149966,  0.91770941,  0.95217648,  0.91388521,
+        1.00163526,  1.12904628,  0.79831386,  0.74019122,  0.89985859,
+        0.76734886,  0.90792408,  0.68319408,  0.80195323,  0.62150539,
+        0.52754548,  0.50219547,  0.29810401,  0.31214137,  0.55113679,
+        0.34359251,  0.07643776,  0.37559284,  0.062235  ,  0.00121459,
+       -0.15918961, -0.07990132, -0.10119248, -0.22469265, -0.01185407,
+       -0.38107543, -0.37893211, -0.3118943 , -0.43514095, -0.44163762,
+       -0.70187065, -0.80490644, -0.81691181, -0.8054469 , -0.86081044,
+       -1.03856819, -0.86281979, -0.90672223, -1.10781648, -0.89018683,
+       -0.93755383, -0.99877347, -1.12011027, -1.17562972, -1.20396737,
+       -0.90036054, -1.00796217, -1.17358392, -0.98230974, -1.00014837,
+       -1.04702353, -0.74300316, -0.86848824, -0.96270176, -0.54660593,
+       -0.69478863, -0.72878821, -0.63392928, -0.94454714, -0.62015691,
+       -0.46436797, -0.52705819, -0.6670443 , -0.30604644, -0.21926622,
+       -0.30773503, -0.19626517, -0.10824563,  0.06225036, -0.09074405};
+
+  float ruido[] = { 5.78350096e-02,  8.05892904e-02,  1.76355647e-01,       -6.57796941e-02,
+        1.38681462e-02, -9.40592157e-02,  2.22461560e-01,  1.69880404e-01,
+        8.51736764e-03,  4.42983831e-02,  1.59874164e-01, -2.69844216e-02,
+       -3.74006191e-02,  1.90898106e-01, -6.26758494e-02,  1.36416496e-03,
+       -1.22563725e-01,  8.45098528e-02,  3.90174424e-02, -2.02686324e-04,
+        3.13459152e-02, -4.86243160e-02,  4.13838310e-02,  1.83882286e-01,
+       -9.53299429e-02,  4.71526032e-02, -1.53551179e-02, -7.21120347e-02,
+       -2.66259662e-02, -4.99569441e-02,  5.66344458e-02,  2.06691988e-01,
+       -9.76799140e-02, -1.25834181e-01,  6.72887395e-02, -2.84129787e-02,
+        1.52174501e-01, -2.95000935e-02,  1.35184226e-01,  3.34640783e-03,
+       -3.95143851e-02, -1.14819182e-02, -1.60122514e-01, -8.87891680e-02,
+        2.09116649e-01,  6.18599519e-02, -1.43872775e-01,  2.17591443e-01,
+       -3.28210397e-02, -3.05133470e-02, -1.27461680e-01,  1.51547216e-02,
+        5.68089189e-02, -4.38211946e-03,  2.69878484e-01, -3.90552883e-02,
+        2.19984297e-02,  1.46332219e-01,  7.85364415e-02,  1.25422248e-01,
+       -8.37116678e-02, -1.38137439e-01, -1.04217636e-01, -4.96973267e-02,
+       -6.50486015e-02, -2.05998331e-01,  3.20561494e-03, -1.07284585e-02,
+       -1.85462190e-01,  5.48139905e-02,  2.62883277e-02, -1.99710205e-02,
+       -1.30288831e-01, -1.78774943e-01, -2.04093238e-01,  9.85067986e-02,
+       -1.41237100e-02, -1.88776163e-01, -1.04981684e-02, -4.52461330e-02,
+       -1.12875667e-01,  1.66628835e-01,  1.29651250e-02, -1.12976327e-01,
+        2.67970024e-01,  8.13578352e-02,  5.80349818e-03,  5.61497363e-02,
+       -3.01759534e-01, -2.72489821e-02,  7.62728464e-02, -4.08614560e-02,
+       -2.37249383e-01,  6.56160188e-02,  9.27672216e-02, -5.65870422e-02,
+       -7.01392412e-03,  1.83468255e-02,  1.25674276e-01, -9.07440544e-02};
+
+
+
+  initArray(y);
+  nlmsFilterWithLowpass(x,ruido, y);
+  printArray(y);
  
-    nlmsFilterWithLowpass(audioRuido.values, audioComRuido.values,   audioRuido.size, y);
-
-
-    return 0;
+  return 0;
 }
