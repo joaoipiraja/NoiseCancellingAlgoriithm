@@ -8,7 +8,6 @@
 #define L 256
 
 
-
 double dotProduct(double *a, double *b, int length) {
     double result = 0.0;
     for (int i = 0; i < length; i++) {
@@ -17,8 +16,26 @@ double dotProduct(double *a, double *b, int length) {
     return result;
 }
 
+void initArray(double values[], int lenght){
+  for(int i = 0; i< lenght; i++){
+      values[i] = 0;
+  }
+}
 
-void nlmsFilter(float x[], float d[], float y[]) {
+void printArray(float values[], int lenght){
+  printf("\nsaida = [");
+  for(int i = 0; i< lenght; i++){
+    if(i < lenght - 1){
+          printf("%f,", values[i]);
+    }else{
+          printf("%f", values[i]);
+    }
+  }
+  printf("] \n");
+}
+
+
+void nlmsFilterWithLowpass(float x[], float d[], float y[]) {
 
     double mu = 0.0001;
     double energy = 0.1;
@@ -29,18 +46,9 @@ void nlmsFilter(float x[], float d[], float y[]) {
     double buffer[L];
   
     // Initialize the filter coefficients
-    for (int i = 0; i < L; i++) {
-        w[i] = 0.0;
-    }
-
-    for (int i = 0; i < L; i++) {
-        buffer[i] = 0.0;
-    }
-
-   for (int i = 0; i < LENGHT; i++) {
-        y[i] = 0.0;
-    }
-
+    initArray(w, L);
+    initArray(buffer, L);
+  
 
     for (int n = 0; n < LENGHT; n++) {
         for (int i = L - 1; i > 0; i--) {
@@ -60,29 +68,9 @@ void nlmsFilter(float x[], float d[], float y[]) {
     }
 }
 
-void printArray(float values[]){
-  printf("\nsaida = [");
-  for(int i = 0; i< LENGHT; i++){
-    if(i < LENGHT - 1){
-          printf("%f,", values[i]);
-    }else{
-          printf("%f", values[i]);
-    }
-  }
-  printf("] \n");
-}
-
-void initArray(float values[]){
-  for(int i = 0; i< LENGHT; i++){
-      values[i] = 0;
-  }
-}
-
-
-
 int main() {
 
-  float y[LENGHT];
+  double y[LENGHT];
 
   float x[] = { 0.05783501,  0.14401321,  0.3029481 ,  0.12347155,  0.26501613,
         0.21797423,  0.59412402,  0.59967532,  0.4947141 ,  0.5849392 ,
@@ -133,9 +121,9 @@ int main() {
 
 
 
-  initArray(y);
-  nlmsFilter(x,ruido, y);
-  printArray(y);
+  initArray(y, LENGHT);
+  nlmsFilterWithLowpass(x,ruido, y);
+  printArray(y, LENGHT);
  
   return 0;
 }
