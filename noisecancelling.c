@@ -7,7 +7,7 @@
 #define LENGHT 100
 #define L 256
 
-
+// Scalar product of 2 vectors (sum of multiplying the position i of one vector by the other) **
 double dotProduct(double *a, double *b, int length) {
     double result = 0.0;
     for (int i = 0; i < length; i++) {
@@ -36,12 +36,15 @@ void printArray(float values[], int lenght){
 
 
 void nlmsFilterWithLowpass(float x[], float d[], float y[]) {
-
+    //mu: step size parameter **
+    //w[L]: peso(weight) **
+       
+  
     double mu = 0.0001;
     double energy = 0.1;
     double error = 0.0;
 
-
+    
     double w[L];
     double buffer[L];
   
@@ -49,7 +52,7 @@ void nlmsFilterWithLowpass(float x[], float d[], float y[]) {
     initArray(w, L);
     initArray(buffer, L);
   
-
+    // Apply the NLMS filter to the input signal **
     for (int n = 0; n < LENGHT; n++) {
         for (int i = L - 1; i > 0; i--) {
             buffer[i] = buffer[i - 1];
@@ -60,6 +63,7 @@ void nlmsFilterWithLowpass(float x[], float d[], float y[]) {
 
         error = d[n] - y[n];
 
+        // Update the filter coefficients and energy estimate **
         energy = energy + dotProduct(buffer, buffer, L);
       
           for (int i = 0; i < L; i++) {
