@@ -1,4 +1,6 @@
 # NLMS Filter 
+This project was made for the Embedded Systems Course taught by  [Prof.Elias Teodoro da Silva Júnior](http://lattes.cnpq.br/9405844293925084) from the [Federal Institute of Science & Technology of Ceará - Fortaleza Campus](https://ifce.edu.br/fortaleza) - 2023.1
+
 This code implements a Normalized Least Mean Squares (NLMS) adaptive filter. The filter is designed to reduce the noise in an input signal by adapting its filter coefficients based on the input and desired output.
 
 ## Code Description
@@ -42,3 +44,9 @@ The filtered output is stored in the y array, which represents the output of the
 
 ## License
 This code is provided under the MIT License. Feel free to use and modify the code according to your needs.
+
+## Resources
+
+- [Active Noise Cancellation Project](http://www-personal.umich.edu/~gowtham/bellala_EECS452report.pdf)
+- [Active Noise Cancellation – From Modeling to Real-Time Prototyping ](https://www.youtube.com/watch?v=mlkAIlL5Bqs&t=1s)
+- [Adaptative FIR LMS Filter](https://youtu.be/OPWHS9LYunA)
