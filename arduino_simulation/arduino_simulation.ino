@@ -70,7 +70,7 @@ void setup() {
     
     // Initialize arrays with zeros
     initArray(filter_coefficients, FILTER_LENGHT);
-
+    initArray(buffer, FILTER_LENGHT);
 }
 
 void loop() {
@@ -78,7 +78,6 @@ void loop() {
     initArray(reference_signal, LENGHT);
     initArray(ruido, LENGHT);
     initArray(output, LENGHT);
-    initArray(buffer, FILTER_LENGHT);
     // Wait until data is available on the serial connection
     while (Serial.available() < 0) {}
 
