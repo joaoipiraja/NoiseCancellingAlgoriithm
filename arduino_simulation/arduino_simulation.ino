@@ -2,7 +2,7 @@
 #include <math.h>
 
 // Constants
-#define LENGHT 70 //Size of a Batch
+#define LENGHT 10 //Size of a Batch
 #define FILTER_LENGHT 100 // Filter Lenght 
 
 // Arrays and variables
@@ -14,7 +14,7 @@ float ruido[LENGHT]; // Noise
 
 // Parameters
 float step_size;
-float energy;
+double energy;
 float error;
 float result;
 
@@ -37,7 +37,7 @@ void initArray(float values[], int length) {
 // Applies the NLMS Adaptative filter
 void nlms_filter() {
     error = 0.0;  
-    
+
     // Apply the NLMS filter to the input signal
     for (int n = 0; n < LENGHT; n++) {
         // Shift the filter coefficients
@@ -65,10 +65,8 @@ void setup() {
     // Open a serial connection
     Serial.begin(31250);
 
-    step_size = 0.001;
+    step_size = 0.0001;
     energy = 0.1;
-    
-   
     // Initialize arrays with zeros
     initArray(filter_coefficients, FILTER_LENGHT);
     initArray(buffer, FILTER_LENGHT);

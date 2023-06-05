@@ -9,7 +9,7 @@ O algoritmo de início não estava rodando no arduino. Fizemos algumas alteraç�
 - Diminuir o comprimento do filtro `FILTER_LENGHT` de 256 para 100
 - Usar o Canal Serial para receber e enviar dados
     - Limitar a saída da 7 casas decimais 
-    - Usar Pyserial e dividir a entrada de 1000 em pequenos chucks de 70 para serem processados aos poucos 
+    - Usar Pyserial e dividir a entrada de 1000 em pequenos chucks de 10 para serem processados aos poucos 
     - Comparamos a duas saídas com base no error entre as respostas 
     
 

@@ -119,14 +119,11 @@ def nlms_filter(input_signal, reference_signal, filter_length=100, step_size=0.0
 # Generate a noisy sine wave and noise
 audio_with_noise, noise = generate_noisy_sine_wave()
 
-audio_with_noise = audio_with_noise*20
-noise = noise*20
-
 # Divide the arrays into batches
-divider = ArrayDivider(audio_with_noise, noise, 70)
+divider = ArrayDivider(audio_with_noise, noise, 10)
 
 # Create a serial interface and divide the input arrays using the interface
-serial_interface = SerialInterface(70)
+serial_interface = SerialInterface(10)
 output = divider.divide(serial_interface)
 
 # Print the input arrays and the output
