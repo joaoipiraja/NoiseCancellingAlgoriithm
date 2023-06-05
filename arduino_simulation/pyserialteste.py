@@ -8,7 +8,7 @@ from tqdm import tqdm
 class SerialInterface:
 
     def __init__(self, input_size):
-        self.port = '/dev/cu.usbmodem11101'  # Change to the correct serial port
+        self.port = '/dev/cu.usbmodem1101'  # Change to the correct serial port
         self.baud_rate = 31250
         self.serial = serial.Serial(self.port, self.baud_rate)
         self.input_size = input_size
@@ -79,7 +79,7 @@ def generate_noisy_sine_wave():
 
 
 # NLMS filter implementation
-def nlms_filter(input_signal, reference_signal, filter_length=200, step_size=0.0001):
+def nlms_filter(input_signal, reference_signal, filter_length=100, step_size=0.001):
     # input_signal: input signal (1D array)
     # reference_signal: reference signal (1D array)
     # filter_length: filter length
@@ -103,11 +103,11 @@ def nlms_filter(input_signal, reference_signal, filter_length=200, step_size=0.0
 
         # Calculate the output signal and error
         output_signal[n] = np.dot(filter_coefficients, buffer)
-        try:
-            error = reference_signal[n] - output_signal[n]
-        except IndexError:
-            print("error", n, len(reference_signal), len(output_signal) )
-            error = 0
+        # try:
+        error = reference_signal[n] - output_signal[n]
+        # except IndexError:
+        #     print("error", n, len(reference_signal), len(output_signal) )
+        #     error = 0
 
         # Update the filter coefficients and energy estimate
         energy = energy + np.dot(buffer, buffer)
@@ -119,11 +119,14 @@ def nlms_filter(input_signal, reference_signal, filter_length=200, step_size=0.0
 # Generate a noisy sine wave and noise
 audio_with_noise, noise = generate_noisy_sine_wave()
 
+audio_with_noise = audio_with_noise*20
+noise = noise*20
+
 # Divide the arrays into batches
-divider = ArrayDivider(audio_with_noise, noise, 5)
+divider = ArrayDivider(audio_with_noise, noise, 70)
 
 # Create a serial interface and divide the input arrays using the interface
-serial_interface = SerialInterface(5)
+serial_interface = SerialInterface(70)
 output = divider.divide(serial_interface)
 
 # Print the input arrays and the output
