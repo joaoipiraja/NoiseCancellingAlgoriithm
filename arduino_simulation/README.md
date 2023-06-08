@@ -1,21 +1,27 @@
 # Arduino Simulation
 
-# Process
+# Process 
 The start algorithm was not running on the arduino. We made some changes
 
-- We defined global variables to see if the arrays would exceed SRAM memory and avoid overflow at runtime
-- We strip all pointer references
-- We use the serial interface as simply as possible: `Serial.parsefloat` and 
-`Serial.println(output[i], 7)`
-- Decrease the length of the `FILTER_LENGHT` filter from 256 to 100
-- Use the Serial Channel to receive and send data
-	- Limit output to 7 decimal places
-	- Use Pyserial and split the input of 1000 into small chunks of 10 to be processed bit by bit
-	- We compare the two outputs based on the error between responses
+- Input of 2 `Float` arrays 1000 positions
+
+### in python
+
+- Generate the signal from a sinusoid with noise + reference noise
+With `pyserial`, send this data in small batches of 10 and receive the output
+- Run the same filter algorithm and compare error between responses
+
+### On arduino:
+- Receive 2 * 10 samples, process the response and send via serial
+- Reset inputs, outputs, energy and error
+- Keep filter coefficients and buffer
 
 ## Problems
-- We were looking to increase the precision to more than 7 decimal places. However, the vector of received characters and the `atof` function were not disturbing the accuracy
 
+- Memory limitation:
+	- Filter size adjustments and adapt algorithm to its adaptive character
+	- Overflow of variables in operation
+- Limitation on precision of numbers
 
 # Installation Guide
 
