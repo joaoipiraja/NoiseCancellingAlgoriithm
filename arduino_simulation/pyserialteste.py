@@ -26,7 +26,7 @@ class SerialInterface:
         return elements
 
     def write(self, num):
-        response = "{:.7f}".format(num)
+        response = "{:.6f}".format(num)
         self.serial.write(response.encode())
 
     def close(self):

@@ -70,6 +70,9 @@ void setup() {
     // Initialize arrays with zeros
     initArray(filter_coefficients, FILTER_LENGHT);
     initArray(buffer, FILTER_LENGHT);
+
+    pinMode(LED_BUILTIN, OUTPUT);
+
 }
 
 void loop() {
@@ -78,8 +81,12 @@ void loop() {
     initArray(ruido, LENGHT);
     initArray(output, LENGHT);
     
+    
     // Wait until data is available on the serial connection
-    while (Serial.available() < 0) {}
+    
+    while (!Serial.available()) {
+      digitalWrite(LED_BUILTIN, HIGH);
+    }
 
     // Read input values from serial
     for (int i = 0; i < LENGHT; i++) {
@@ -96,6 +103,6 @@ void loop() {
 
     // Print the output values
     for (int i = 0; i < LENGHT; i++) {
-        Serial.println(output[i], 7);
+        Serial.println(output[i], 6);
     }
 }
