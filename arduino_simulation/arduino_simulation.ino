@@ -18,48 +18,34 @@ double energy;
 float error;
 float result;
 
-// Calculates the dot product of two arrays
-float dotProduct(float a[], float b[], int size) {
-    result = 0.0;
-    for (int i = 0; i < size; i++) {
-        result += a[i] * b[i];
-    }
-    return result;
-}
-
-// Initializes an array with zeros
 void initArray(float values[], int length) {
-    for (int i = 0; i < length; i++) {
-        values[i] = 0.0;
-    }
+  memset(values, 0, length * sizeof(float));
 }
 
-// Applies the NLMS Adaptative filter
 void nlms_filter() {
-    error = 0.0;  
+  error = 0.0;
+  float reciprocal_energy = 1.0 / energy;
 
-    // Apply the NLMS filter to the input signal
-    for (int n = 0; n < LENGHT; n++) {
-        // Shift the filter coefficients
-        for (int i = FILTER_LENGHT- 1; i > 0; i--) {
-            buffer[i] = buffer[i - 1];
-        }
-        buffer[0] = reference_signal[n];
+  for (int n = 0; n < LENGHT; n++) {
+    memmove(buffer + 1, buffer, (FILTER_LENGHT - 1) * sizeof(float));
+    buffer[0] = reference_signal[n];
 
-        // Calculate the output
-        output[n] = dotProduct(filter_coefficients, buffer, FILTER_LENGHT);
-
-        // Calculate the error
-      
-        error = reference_signal[n] - output[n];
-
-        // Update the filter coefficients and energy estimate
-        energy = energy + dotProduct(buffer, buffer, FILTER_LENGHT);
-        for (int i = 0; i < FILTER_LENGHT; i++) {
-            filter_coefficients[i] += (step_size/ energy) * error * buffer[i];
-        }
+    float result = 0.0;
+    for (int i = 0; i < FILTER_LENGHT; i++) {
+      result += filter_coefficients[i] * buffer[i];
     }
+    output[n] = result;
+
+    error = reference_signal[n] - output[n];
+
+    energy += buffer[0] * buffer[0] - buffer[FILTER_LENGHT - 1] * buffer[FILTER_LENGHT - 1];
+
+    for (int i = 0; i < FILTER_LENGHT; i++) {
+      filter_coefficients[i] += (step_size * reciprocal_energy) * error * buffer[i];
+    }
+  }
 }
+
 
 void setup() {
     // Open a serial connection
