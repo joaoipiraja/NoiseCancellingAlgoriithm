@@ -8,7 +8,7 @@ from tqdm import tqdm
 class SerialInterface:
 
     def __init__(self, input_size):
-        self.port = '/dev/cu.usbmodem1101'  # Change to the correct serial port
+        self.port = '/dev/cu.usbmodem11101'  # Change to the correct serial port
         self.baud_rate = 31250
         self.serial = serial.Serial(self.port, self.baud_rate)
         self.input_size = input_size

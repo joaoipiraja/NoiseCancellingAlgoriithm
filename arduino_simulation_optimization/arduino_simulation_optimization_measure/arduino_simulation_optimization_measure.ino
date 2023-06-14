@@ -5,7 +5,6 @@
 #define LENGHT 10 //Size of a Batch
 #define FILTER_LENGHT 100 // Filter Lenght 
 
-
 static const float reference_signal[] = {-0.06077251, -0.03236705, -0.07158277,  0.03226485,  0.15505562,
          0.02220206,  0.1239529 ,  0.06949102,  0.3687647 , -0.12777717};
 
@@ -45,6 +44,7 @@ void nlms_filter() {
 
     error = reference_signal[n] - output[n];
 
+    //buffer[0] ^2 - buffer[FILTER_LENGHT - 1]^2
     energy += buffer[0] * buffer[0] - buffer[FILTER_LENGHT - 1] * buffer[FILTER_LENGHT - 1];
 
     for (int i = 0; i < FILTER_LENGHT; i++) {
@@ -62,7 +62,9 @@ void setup() {
     // Initialize arrays with zeros
     initArray(filter_coefficients, FILTER_LENGHT);
     initArray(buffer, FILTER_LENGHT);
-
+    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(8, OUTPUT);
+    digitalWrite(LED_BUILTIN, LOW);
 
 }
 
@@ -70,17 +72,24 @@ void loop() {
 
     startTime = 0.0;
     endTime = 0.0;
+
+
     initArray(output, LENGHT);
     
     //while (!Serial.available()) {}
 
-    startTime = millis();
+   // startTime = millis();
+    digitalWrite(8, HIGH);
     nlms_filter(); // 59 ms
-    //Com recurso de memmove - 40 ms
-    //
+    //Com recurso de memmove/ memoryset/  - 40 ms
+    digitalWrite(8, LOW);
+    delay(50);
 
-    endTime = millis();
 
-    Serial.println(endTime - startTime);
+
+   // endTime = millis();
+
+  // Serial.println(endTime - startTime);
+   
 
 }

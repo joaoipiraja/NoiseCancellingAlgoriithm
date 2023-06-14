@@ -17,17 +17,22 @@ float step_size;
 double energy;
 float error;
 float result;
+float reciprocal_energy;
 
 void initArray(float values[], int length) {
+  //substitui loop de 0 à lenght 
   memset(values, 0, length * sizeof(float));
 }
 
 void nlms_filter() {
   error = 0.0;
-  float reciprocal_energy = 1.0 / energy;
+  reciprocal_energy = 1.0 / energy;
 
   for (int n = 0; n < LENGHT; n++) {
+
+    //substitui a inversão do vetor buffer em loop 
     memmove(buffer + 1, buffer, (FILTER_LENGHT - 1) * sizeof(float));
+   
     buffer[0] = reference_signal[n];
 
     float result = 0.0;
@@ -37,6 +42,9 @@ void nlms_filter() {
     output[n] = result;
 
     error = reference_signal[n] - output[n];
+
+    //buffer[0] ^2 - buffer[FILTER_LENGHT - 1]^2
+    //Substitui dotproduct
 
     energy += buffer[0] * buffer[0] - buffer[FILTER_LENGHT - 1] * buffer[FILTER_LENGHT - 1];
 
@@ -71,7 +79,6 @@ void loop() {
     // Wait until data is available on the serial connection
     
     while (!Serial.available()) {
-      digitalWrite(LED_BUILTIN, HIGH);
     }
 
     // Read input values from serial
