@@ -29,6 +29,15 @@ void initArray(float values[], int length) {
   memset(values, 0, length * sizeof(float));
 }
 
+// Calculates the dot product of two arrays
+float dotProduct(float a[], float b[], int size) {
+    result = 0.0;
+    for (int i = 0; i < size; i++) {
+        result += a[i] * b[i];
+    }
+    return result;
+}
+
 // NLMS filter algorithm implementation
 void nlms_filter() {
   error = 0.0;
@@ -38,13 +47,8 @@ void nlms_filter() {
     // Shift buffer values
     memmove(buffer + 1, buffer, (FILTER_LENGHT - 1) * sizeof(float));
     buffer[0] = reference_signal[n];
-
-    float result = 0.0;
-    // Compute filtered output for current sample
-    for (int i = 0; i < FILTER_LENGHT; i++) {
-      result += filter_coefficients[i] * buffer[i];
-    }
-    output[n] = result;
+    
+    output[n] = dotProduct(filter_coefficients, buffer, FILTER_LENGHT);
 
     error = reference_signal[n] - output[n];    // Calculate error for current sample
 
