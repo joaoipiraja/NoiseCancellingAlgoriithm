@@ -67,3 +67,17 @@ void nlms_filter() {
 - Filter coefficients update: In the original version, the filter coefficients are updated using the NLMS update equation, dividing the step size by the energy estimate. In the updated version, a reciprocal energy value (reciprocal_energy) is calculated once to avoid repeated division in each iteration of the loop, improving efficiency.
 
 Overall, the updated version introduces some optimizations and improvements to the NLMS filter implementation.
+
+## Result:
+
+### Original Version
+- 52,4 ma 
+- 57.60 ms (measure in osciloscope) and 59ms (measure using `millis()`)
+- 3690 (11%) of Flash Memory
+- 1088 bytes (53%) of SRAM Memory
+
+### Original Version
+- 54 ma 
+- 41.2 ms (measure in osciloscope) and 40ms (measure using `millis()`)
+- 3800 (11%) of Flash Memory
+- 1084 bytes (52%) of SRAM Memory
