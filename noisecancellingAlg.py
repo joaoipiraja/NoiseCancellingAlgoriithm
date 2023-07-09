@@ -1,7 +1,5 @@
 import numpy as np
 
-#with low pass filter
-
 def nlms_filter(x, d, L, mu):
     # x: input signal (1D array)
     # d: reference signal (1D array)
