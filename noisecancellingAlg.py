@@ -1,10 +1,4 @@
 import numpy as np
-import scipy.io.wavfile as wav
-from scipy import signal
-from matplotlib import pyplot as plt
-
-from scipy import signal
-
 
 #with low pass filter
 
