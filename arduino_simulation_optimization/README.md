@@ -76,7 +76,7 @@ Overall, the updated version introduces some optimizations and improvements to t
 - 3690 (11%) of Flash Memory
 - 1088 bytes (53%) of SRAM Memory
 
-### Original Version
+### New Version
 - 54 ma 
 - 41.2 ms (measure in osciloscope) and 40ms (measure using `millis()`)
 - 3800 (11%) of Flash Memory
